@@ -1,0 +1,40 @@
+// IDL fuer das Lager-Projekt.
+// Version SS 2013
+
+module lagern {
+
+  interface Fach {
+    exception ENotEnoughPieces{ string s;};
+    exception EInvalidCount{ string s; };
+    readonly attribute long anzahl; //Anzahl gelagerter Teile
+    readonly attribute string name; //Name des Faches
+    void einlagern( in long anzahl ) raises( EInvalidCount );
+    void auslagern( in long anzahl ) raises( EInvalidCount, ENotEnoughPieces );
+  };
+
+  interface Monitor {
+    void meldung( in string msg );
+    //Damit kann das Lager den Monitor beenden.
+    void exit();
+  };
+
+  typedef sequence<Fach> TFachliste;
+
+  interface Lager {
+    exception ENotFound{ string s;};
+    exception EAlreadyExists{ string s;};
+    //holt die aktuelle Fachliste, Rückgabewert soll die Gesamtzahl der Faecher angeben
+    long getFachliste( out TFachliste fachliste );
+    Fach neu( in string name ) raises( EAlreadyExists );
+    void loeschen( in string name ) raises( ENotFound );
+    Fach hole( in string name ) raises( ENotFound );
+
+    void monitorHinzufuegen( in Monitor theMonitor );
+    void monitorEntfernen( in Monitor theMonitor );
+
+    //Dient zum Beenden der Lageranwendung. Sorgt dafuer, dass das Lager und alle registrierten Monitore beendet werden.
+    void exit();
+  };
+
+
+};
