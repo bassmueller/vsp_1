@@ -1,8 +1,11 @@
 package client;
 
+import java.io.ObjectInputStream.GetField;
+
 import lagern.Fach;
 import lagern.Lager;
 import lagern.LagerHelper;
+import lagern.TFachlisteHolder;
 import lagern.FachPackage.EInvalidCount;
 import lagern.FachPackage.ENotEnoughPieces;
 import lagern.LagerPackage.EAlreadyExists;
@@ -34,10 +37,12 @@ public class Client {
 	public static void main(String args[]) {
 	    
 		try {
+			System.out.println(args);
+			System.out.println("Arg4:" + args[4] );
 		    // zugang zum namensdienst:
 			ORB orb = ORB.init(args, null);
 			// verbinden mit namensdienst:
-			org.omg.CORBA.Object ogjRef = orb.resolve_initial_references("NamingService");
+			org.omg.CORBA.Object ogjRef = orb.resolve_initial_references("NameService");
 			//
 			NamingContextExt ncRef = NamingContextExtHelper.narrow(ogjRef);
 			lager = LagerHelper.narrow(ncRef.resolve_str(args[4]));  // args[4] = lagername
@@ -101,11 +106,12 @@ public class Client {
 	 * 
 	 */
 	private static void liste() {
-//	    Fach[] faecher = null;// = lager.holeFachliste();
-//	    for(Fach f: faecher)
-//	        System.out.printf("Fach: %s, Anzahl Teile: %d", f.name(), f.anzahl());
-    }//list
-	
+		TFachlisteHolder faecher = new TFachlisteHolder();
+	    int anzhalFaecher = lager.getFachliste(faecher);//
+	    System.out.println("Anzahl: " + anzhalFaecher);
+	    for(Fach f: faecher.value)
+	        System.out.printf("Fach: %s, Anzahl Teile: %d", f.name(), f.anzahl());
+	}//list
 	
 	/**
 	 * 
