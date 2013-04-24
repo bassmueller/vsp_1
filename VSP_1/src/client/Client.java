@@ -69,7 +69,7 @@ public class Client {
 	    	}
 	    }
 	    
-	    if(args[0]==null || args[1]==null || args[2]==null || args[3]==null || args[4]==null || args[5]==null)
+	    if(args[5]==null)
 	        usage();
 	    
 	    if(args[0].compareTo(INIT_HOST) != 0 || args[2].compareTo(INIT_PORT) !=0)
@@ -91,9 +91,6 @@ public class Client {
         } catch (UnknownHostException e1) {
             System.err.println("Invalid IP Address.");
         }//try
-	    
-	    if(args[4].compareTo(LAGERNAME) != 0)
-	        usage();
 	    
 		try {
 		    // zugang zum namensdienst:
@@ -275,7 +272,7 @@ public class Client {
             Fach fach = lager.hole(name);
             try {
                 fach.auslagern(anzahl);
-                System.out.printf("%d Teile aus Fach \"%s\" ausgelagert.\n");
+                System.out.printf("%d Teile aus Fach \"%s\" ausgelagert.\n", anzahl, name);
             } catch (EInvalidCount e) {
                 System.err.printf("Ungueltige Anzahl: %d\n", anzahl);
             } catch (ENotEnoughPieces e) {
