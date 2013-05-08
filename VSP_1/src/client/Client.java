@@ -252,11 +252,14 @@ public class Client {
             try {
                 fach.einlagern(anzahl);
                 System.out.printf("%d Teile in Fach \"%s\" eingelagert.\n", anzahl, name);
+
             } catch (EInvalidCount e) {
                 System.err.printf("Ungueltige Anzahl: %d\n", anzahl);
+                System.out.println(e.s);
             }//try
         } catch (ENotFound e) {
             System.err.printf("Fach \"%s\" existiert nicht.\n", name);
+            System.out.println(e.s);
         }//try
 	}//store
 	
@@ -275,11 +278,14 @@ public class Client {
                 System.out.printf("%d Teile aus Fach \"%s\" ausgelagert.\n", anzahl, name);
             } catch (EInvalidCount e) {
                 System.err.printf("Ungueltige Anzahl: %d\n", anzahl);
+                System.out.println(e.s);
             } catch (ENotEnoughPieces e) {
                 System.err.printf("Nicht genug Teile im Lager: %d\n", anzahl);
+                System.out.println(e.s);
             }//try
         } catch (ENotFound e) {
             System.err.printf("Fach \"%s\" existiert nicht.\n", name);
+            System.out.println(e.s);
         }//try
 	}//release
 	
