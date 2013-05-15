@@ -1,4 +1,6 @@
-
+/**
+ * 
+ */
 package client;
 
 
@@ -43,12 +45,10 @@ public class Client {
 	
 	private final static String INIT_HOST = "-ORBInitialHost";
 	private final static String INIT_PORT = "-ORBInitialPort";
-	private final static String LAGERNAME = "Lager";
-	private final static boolean DEBUG = false;
 	
 	static Lager lager;
 	
-	
+
 	
 	/**
 	 * Client Anwendung.
@@ -59,15 +59,10 @@ public class Client {
 	    
 	    String host;
 	    String fachname;
+	    String lagername;
 	    String funktion;
 	    int anzahl = -1;
 	    int port = 0;
-	    
-	    if(DEBUG){
-	    	for(int i = 0; i < args.length; i++){
-	    		System.out.println("Argument " + i + " : " + args[i]);
-	    	}
-	    }
 	    
 	    if(args[5]==null)
 	        usage();
@@ -81,7 +76,7 @@ public class Client {
 	        usage();
 	    }//try
 	    if(port < 1024 || port > 65535) {
-	        System.err.println("Invalid Port Number.");
+	        System.err.println("Client: ERROR Invalid Port Number.");
 	        usage();
 	    }//if
 	    
@@ -89,9 +84,11 @@ public class Client {
         try {
             java.net.InetAddress.getByName(host);
         } catch (UnknownHostException e1) {
-            System.err.println("Invalid IP Address.");
+            System.err.println("Client: ERROR Invalid IP Address.");
         }//try
 	    
+        
+        lagername = args[4];
 		try {
 		    // zugang zum namensdienst:
 			ORB orb = ORB.init(args, null);
@@ -99,7 +96,7 @@ public class Client {
 			org.omg.CORBA.Object ogjRef = orb.resolve_initial_references("NameService");
 			// CORBA object auf NamingContextExt casten:
 			NamingContextExt ncRef = NamingContextExtHelper.narrow(ogjRef);
-			lager = LagerHelper.narrow(ncRef.resolve_str(LAGERNAME));
+			lager = LagerHelper.narrow(ncRef.resolve_str(lagername));
 			
 			funktion = args[5];
 			switch(funktion) {
@@ -166,14 +163,14 @@ public class Client {
 		        break;
 			}//switch
 		} catch (InvalidName e) {
-			System.err.println("Falscher Lagername.");
+			System.err.println("Client: ERROR Falscher Lagername.");
 		} catch (NotFound e) {
-		    System.err.println("Lager nicht Gefunden.");
+		    System.err.println("Client: ERROR Lager nicht Gefunden.");
 		} catch (CannotProceed e) {
-			System.err.println("Fehler bei der Ausfuehrung.");
+			System.err.println("Client: ERROR Fehler bei der Ausfuehrung.");
 			e.printStackTrace();
 		} catch (org.omg.CosNaming.NamingContextPackage.InvalidName e) {
-			System.err.println("Ungueltiger Lagername.");
+			System.err.println("Client: ERROR Ungueltiger Lagername.");
 		}//try
 	}//main
 	
@@ -194,7 +191,7 @@ public class Client {
 	 */
 	private static void quit() {
 	    lager.exit();
-	    System.out.println("Lager beendet.");
+	    System.out.println("Client: Lager beendet.");
 	}//quit
 	
 	
@@ -204,11 +201,16 @@ public class Client {
 	private static void liste() {
 		TFachlisteHolder faecher = new TFachlisteHolder();
 	    int anzahlFaecher = lager.getFachliste(faecher);
-	    System.out.printf("Anzahl Faecher: %d\n\n", anzahlFaecher);
-	    for(Fach f: faecher.value)
-	        System.out.printf("Fach: %s, Anzahl Teile: %d\n", f.name(), f.anzahl());
-	    System.out.println();
+	    if(anzahlFaecher > 0) {
+    	    System.out.println("Client: Fachliste");
+    	    System.out.printf("Anzahl Faecher: %d\n\n", anzahlFaecher);
+    	    for(Fach f: faecher.value)
+    	        System.out.printf("Fach: %s, Anzahl Teile: %d\n", f.name(), f.anzahl());
+    	    System.out.println();
+	    } else
+	        System.err.println("Client: ERROR Keine Faecher vorhanden...");
 	}//list
+	
 	
 	/**
 	 * Anlegen eines neuen Fachs.
@@ -218,9 +220,9 @@ public class Client {
 	private static void neu(String name) {
 	    try {
             lager.neu(name);
-            System.out.printf("Fach \"%s\" angelegt.\n", name);
+            System.out.printf("Client: Fach \"%s\" angelegt.\n", name);
         } catch (EAlreadyExists e) {
-            System.err.printf("Fach \"%s\" existiert bereits.\n", name);
+            System.err.printf("Client: Fach \"%s\" existiert bereits.\n", name);
         }//try
 	}//create
 	
@@ -233,9 +235,9 @@ public class Client {
 	private static void entferne(String name) {
 	    try {
             lager.loeschen(name);
-            System.out.printf("Fach \"%s\" entfernt.\n", name);
+            System.out.printf("Client: Fach \"%s\" entfernt.\n", name);
         } catch (ENotFound e) {
-            System.err.printf("Fach \"%s\" existiert nicht.\n", name);
+            System.err.printf("Client: Fach \"%s\" existiert nicht.\n", name);
         }//try
 	}//delete
 	
@@ -251,15 +253,12 @@ public class Client {
             Fach fach = lager.hole(name);
             try {
                 fach.einlagern(anzahl);
-                System.out.printf("%d Teile in Fach \"%s\" eingelagert.\n", anzahl, name);
-
+                System.out.printf("Client: %d Teile in Fach \"%s\" eingelagert.\n", anzahl, name);
             } catch (EInvalidCount e) {
-                System.err.printf("Ungueltige Anzahl: %d\n", anzahl);
-                System.out.println(e.s);
+                System.err.printf("Client: ERROR Ungueltige Anzahl: %d\n", anzahl);
             }//try
         } catch (ENotFound e) {
-            System.err.printf("Fach \"%s\" existiert nicht.\n", name);
-            System.out.println(e.s);
+            System.err.printf("Client: ERROR Fach \"%s\" existiert nicht.\n", name);
         }//try
 	}//store
 	
@@ -275,17 +274,14 @@ public class Client {
             Fach fach = lager.hole(name);
             try {
                 fach.auslagern(anzahl);
-                System.out.printf("%d Teile aus Fach \"%s\" ausgelagert.\n", anzahl, name);
+                System.out.printf("Client: %d Teile aus Fach \"%s\" ausgelagert.\n", anzahl, name);
             } catch (EInvalidCount e) {
-                System.err.printf("Ungueltige Anzahl: %d\n", anzahl);
-                System.out.println(e.s);
+                System.err.println(e.s);
             } catch (ENotEnoughPieces e) {
-                System.err.printf("Nicht genug Teile im Lager: %d\n", anzahl);
-                System.out.println(e.s);
+                System.err.println(e.s);
             }//try
         } catch (ENotFound e) {
-            System.err.printf("Fach \"%s\" existiert nicht.\n", name);
-            System.out.println(e.s);
+            System.err.printf("Client: ERROR Fach \"%s\" existiert nicht.\n", name);
         }//try
 	}//release
 	
@@ -303,7 +299,7 @@ public class Client {
 	    try {
             lager.neu(testfach);
         } catch (EAlreadyExists e1) {
-            System.err.println("\"testFach\" existiert bereits.");
+            System.err.printf("Client: ERROR \"%s\" existiert bereits.\n", testfach);
             return;
         }//try
 	    
@@ -311,7 +307,7 @@ public class Client {
         try {
             fach = lager.hole(testfach);
         } catch (ENotFound e) {
-            System.err.println("\"testFach\" konnte nicht gefunden werden.");
+            System.err.printf("Client: ERROR \"%s\" konnte nicht gefunden werden.\n", testfach);
             return;
         }//try
         
@@ -319,14 +315,14 @@ public class Client {
             try {
                 fach.einlagern(1);
             } catch (EInvalidCount e) {
-                System.err.println("Ungueltige Anzahl einzulagernder Teile");
+                System.err.println("Client: ERROR Ungueltige Anzahl einzulagernder Teile");
                 return;
             }//try
 	    
 	    if(fach.anzahl() == anzahl)
-	        System.out.printf("%d Einlagerungen fehlerfrei vorgenommen.\n", anzahl);
+	        System.out.printf("Client: %d Einlagerungen fehlerfrei vorgenommen.\n", anzahl);
 	    else
-	        System.err.printf("Ungueltige Anzahl Teile im Lager: soll: %d, ist: %d\n", anzahl, fach.anzahl());
+	        System.err.printf("Client: Ungueltige Anzahl Teile im Lager: soll: %d, ist: %d\n", anzahl, fach.anzahl());
 	    
 	    entferne(testfach);
 	}//testLoop
